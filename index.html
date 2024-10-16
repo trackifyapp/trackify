@@ -63,7 +63,7 @@
 
         // Function to authorize with Spotify
         const authorizeSpotify = () => {
-            const scopes = 'user-read-currently-playing user-top-read user-read-recently-played';
+            const scopes = 'user-read-currently-playing user-top-read user-read-recently-played user-read-private';
             const authUrl = `https://accounts.spotify.com/authorize?response_type=token&client_id=${client_id}&scope=${scopes}&redirect_uri=${redirect_uri}`;
             window.location = authUrl;
         };
@@ -104,9 +104,21 @@
 
         // Fetch Spotify data
         const fetchSpotifyData = async (token) => {
+            await fetchUserProfile(token);
             await fetchCurrentTrack(token);
             await fetchRecentSongs(token);
             await fetchTopArtists(token);
+        };
+
+        // Fetch user profile to get the display name
+        const fetchUserProfile = async (token) => {
+            const response = await fetch('https://api.spotify.com/v1/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            const username = data.display_name || data.id; // Use display name or fallback to user ID
+            localStorage.setItem('spotify_username', username);
+            document.getElementById('display-username').textContent = username;
         };
 
         // Fetch currently playing track
@@ -166,18 +178,8 @@
         window.onload = async () => {
             const token = getAccessToken();
             if (token) {
-                // Ask for a username after logging in
-                let username = localStorage.getItem('spotify_username');
-                if (!username) {
-                    username = prompt('Please enter your username (this cannot be changed later):');
-                    if (username) {
-                        localStorage.setItem('spotify_username', username);
-                    } else {
-                        alert('Username is required. Please refresh and log in again.');
-                        localStorage.removeItem('spotify_access_token'); // Clear access token if username is not provided
-                        return;
-                    }
-                }
+                const username = localStorage.getItem('spotify_username');
+                await fetchSpotifyData(token);
                 showProfile(username);
             } else {
                 checkLogin();
