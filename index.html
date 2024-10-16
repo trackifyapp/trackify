@@ -59,7 +59,7 @@
     <script>
         // Spotify API details
         const client_id = '1af7d5d35cf74a108345de8262532178'; // Your Spotify client ID
-        const redirect_uri = 'https://trackifyapp.github.io/home'; // Redirect URI
+        const redirect_uri = 'https://trackifyapp.github.io'; // Redirect URI
 
         // Function to authorize with Spotify
         const authorizeSpotify = () => {
@@ -97,9 +97,6 @@
 
             const token = localStorage.getItem('spotify_access_token');
             await fetchSpotifyData(token); // Fetch data from Spotify API
-
-            // Change URL to show profile (e.g., /home/username)
-            window.history.pushState({}, '', `/home/${username}`);
         };
 
         // Fetch Spotify data
@@ -171,7 +168,7 @@
         document.getElementById('logout-button').addEventListener('click', () => {
             localStorage.removeItem('spotify_access_token');
             localStorage.removeItem('spotify_username');
-            window.location.href = '/';
+            window.location.reload(); // Reload the page to show login screen again
         });
 
         // Handle page load
@@ -184,11 +181,6 @@
             } else {
                 checkLogin();
             }
-        };
-
-        // Handle browser back/forward buttons
-        window.onpopstate = () => {
-            checkLogin();
         };
     </script>
 </body>
