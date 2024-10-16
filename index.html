@@ -58,8 +58,8 @@
 
     <script>
         // Spotify API details
-        const client_id = '1af7d5d35cf74a108345de8262532178'; // Replace with your client ID
-        const redirect_uri = window.location.origin; // Redirect URI (current domain)
+        const client_id = '1af7d5d35cf74a108345de8262532178'; // Your Spotify client ID
+        const redirect_uri = 'https://trackifyapp.github.io/home'; // Redirect URI
 
         // Function to authorize with Spotify
         const authorizeSpotify = () => {
@@ -98,8 +98,8 @@
             const token = localStorage.getItem('spotify_access_token');
             await fetchSpotifyData(token); // Fetch data from Spotify API
 
-            // Change URL to show profile (e.g., /profile/username)
-            window.history.pushState({}, '', `/profile/${username}`);
+            // Change URL to show profile (e.g., /home/username)
+            window.history.pushState({}, '', `/home/${username}`);
         };
 
         // Fetch Spotify data
@@ -152,12 +152,7 @@
 
         // Event listener for login button
         document.getElementById('login-button').addEventListener('click', () => {
-            // Prompt user for username (for demo purposes)
-            const username = prompt('Please enter your username:');
-            if (username) {
-                localStorage.setItem('spotify_username', username);
-                authorizeSpotify();
-            }
+            authorizeSpotify();
         });
 
         // Event listener for logout button
@@ -168,13 +163,22 @@
         });
 
         // Handle page load
-        window.onload = () => {
+        window.onload = async () => {
             const token = getAccessToken();
             if (token) {
-                const username = localStorage.getItem('spotify_username');
-                if (username) {
-                    showProfile(username);
+                // Ask for a username after logging in
+                let username = localStorage.getItem('spotify_username');
+                if (!username) {
+                    username = prompt('Please enter your username (this cannot be changed later):');
+                    if (username) {
+                        localStorage.setItem('spotify_username', username);
+                    } else {
+                        alert('Username is required. Please refresh and log in again.');
+                        localStorage.removeItem('spotify_access_token'); // Clear access token if username is not provided
+                        return;
+                    }
                 }
+                showProfile(username);
             } else {
                 checkLogin();
             }
